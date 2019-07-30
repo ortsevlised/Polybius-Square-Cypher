@@ -1,6 +1,5 @@
 package ie.gmit.dip;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -8,11 +7,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Cypher {
-    StringBuilder encrypted = new StringBuilder();
+import static org.hamcrest.CoreMatchers.is;
 
-    String key = "JAVA";
+public class Cypher {
+
+    StringBuilder encrypted = new StringBuilder();
+    StringBuilder decrypted = new StringBuilder();
+    String keyword = "JAVA";
+
     private Map<Integer, Character> polybiusMap = new HashMap<>();
+
     {
         polybiusMap.put(0, 'A');
         polybiusMap.put(1, 'D');
@@ -31,9 +35,17 @@ public class Cypher {
             {'J', '9', 'U', 'T', 'I', '8'}
     };
 
+    public static <K, V> K getKey(Map<K, V> map, V value) {
+        return map.entrySet()
+                .stream()
+                .filter(entry -> value.equals(entry.getValue()))
+                .map(Map.Entry::getKey)
+                .findFirst().get();
+    }
 
     /**
      * Generates the values that will be used in the matrix
+     *
      * @param toEncrypt
      * @return
      */
@@ -56,17 +68,38 @@ public class Cypher {
     }
 
     /**
-     * Encrypts the text using the specified key
-     * @param textToEncrypt
-     * @param key
+     * Generates the plaintext from the matrix
+     *
+     * @param encrypted
      */
-    public void encrypt(String textToEncrypt, String key) {
+    public void generateValueFromMatrix(String encrypted) {
+        String[] split = encrypted.split("(?<=\\G..)");
+
+        StringBuilder sb = new StringBuilder();
+        for (String a : split) {
+            if (a.trim().length() > 1) {
+                sb.append(polybiusSquare[getKey(polybiusMap, a.charAt(0))][getKey(polybiusMap, a.charAt(1))]);
+            }
+        }
+        System.out.println(sb);
+
+
+    }
+
+    /**
+     * Encrypts the text using the specified keyword
+     *
+     * @param textToEncrypt
+     * @param keyword
+     */
+    public String encrypt(String textToEncrypt, String keyword) {
         String plainText = generateValuesForMatrix(textToEncrypt).toString();
-        int columns = key.length();
-        int rows = getRows(key,plainText.length());
-        int increment=0;
+        int columns = keyword.length();
+        int rows = getRows(keyword, plainText.length());
+        int increment = 0;
+
         int position;
-        char[] keyToArray = key.toCharArray();
+        char[] keyToCharArray = keyword.toCharArray();
         char[][] keyMatrix = new char[rows][columns];
 
         for (int i = 0; i < rows; i++) {
@@ -78,29 +111,34 @@ public class Cypher {
             }
         }
 
-        char[] Sorted_key = new char[keyToArray.length];
-        for (int i = 0; i < keyToArray.length; i++) {
-            Sorted_key[i] = keyToArray[i];
+        char[] sortedKey = new char[keyToCharArray.length];
+        for (int i = 0; i < keyToCharArray.length; i++) {
+            sortedKey[i] = keyToCharArray[i];
         }
 
-        Arrays.sort(Sorted_key);
+        Arrays.sort(sortedKey);
         for (int i = 0; i < columns; i++) {
-            position = key.indexOf(Sorted_key[i]);
+
+            position = keyword.indexOf(sortedKey[i]);
+            keyToCharArray[position] = '!';
+            keyword = new String(keyToCharArray);
             for (int j = 0; j < rows; j++) {
-                encrypted=encrypted.append(keyMatrix[j][position]);
+                encrypted.append(keyMatrix[j][position]);
             }
         }
         System.out.println(encrypted);
+        return encrypted.toString();
     }
 
     /**
      * Gets the amount of rows needed for the matrix
+     *
      * @param key
      * @param length
      * @return
      */
     private int getRows(String key, int length) {
-             int rows = length / key.length();
+        int rows = length / key.length();
         if (length % key.length() != 0) {
             rows++;
         }
@@ -108,15 +146,61 @@ public class Cypher {
     }
 
 
+    public void decrypt(String keyword, String toDecrypt) {
+        toDecrypt = toDecrypt.toUpperCase().trim();
+        int rows = getRows(keyword, toDecrypt.length());
+        int column = keyword.length();
+        char[] keyToCharArray = keyword.toCharArray();
+        int position;
+        int increment = 0;
+        char[][] Matrix = new char[rows][column];
+        char[] toDecryptArray = toDecrypt.toCharArray();
+        char[] sortedKey = keyword.toCharArray();
+        Arrays.sort(sortedKey);
+
+        for (int i = 0; i < column; i++) {
+
+            position = keyword.indexOf(sortedKey[i]);
+            keyToCharArray[position] = '!';
+            keyword = new String(keyToCharArray);
+
+            for (int j = 0; j < rows; j++) {
+                if (increment < toDecrypt.length()) {
+                    Matrix[j][position] = toDecryptArray[increment];
+                    increment++;
+                }
+            }
+        }
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < column; j++) {
+                decrypted = decrypted.append(Matrix[i][j]);
+            }
+        }
+
+        generateValueFromMatrix(decrypted.toString());
+    }
+
+    @Test
+    public void testDecryption() {
+        decrypt(keyword, "AAGDXFGFGGF FAXDFDDXDDG ");
+    }
+
     @Test
     public void testConvertToMatrixValues() {
-        Assert.assertThat(generateValuesForMatrix("TEXT TO ENCRYPT").toString(), CoreMatchers.is("XGDFGAXGXGFGDFFFGVGFDXAAXG"));
+        Assert.assertThat(generateValuesForMatrix("OBJECT").toString(), is("FGVXXADFGVXG"));
     }
+
 
     @Test
     public void testing() {
-        String textToEncrypt = "Text TO ENCRYPT";
-        encrypt(textToEncrypt, key);
+        String textToEncrypt = "OBJECT";
+        Assert.assertThat(encrypt(textToEncrypt, keyword), is("GAVXFGFXGVDX"));
     }
 
+    @Test
+    public void testingOtherText() {
+        String textToEncrypt = "la puta madre";
+        Assert.assertThat(encrypt(textToEncrypt, keyword), is("XFF\u0000FDG\u0000"));
+    }
 }
