@@ -85,5 +85,19 @@ public class Utils {
         return true;
     }
 
+    /**
+     * Makes sure the text is not empty
+     * @param text
+     * @param bufferedReader
+     * @return
+     * @throws IOException
+     */
+    public static String checkIsNotEmpty(String text, BufferedReader bufferedReader) throws IOException {
+        while (text.length() < 1) {
+            System.out.println("Keyword/Message cannot be empty, please enter a valid one >>>");
+            text = bufferedReader.readLine();
+        }
+        return text;
+    }
 }
 

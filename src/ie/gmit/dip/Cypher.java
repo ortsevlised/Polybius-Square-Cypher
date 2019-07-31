@@ -1,11 +1,11 @@
 package ie.gmit.dip;
 
-import java.io.FileWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
-import static ie.gmit.dip.Utils.*;
+import static ie.gmit.dip.Utils.getKey;
 import static ie.gmit.dip.Utils.getRows;
 
 public class Cypher {
@@ -47,7 +47,6 @@ public class Cypher {
         polybiusMap.put(4, 'V');
         polybiusMap.put(5, 'X');
         polybiusMap.put(6, 'Z');
-
     }
 
     private char[][] polybiusSquare = {
@@ -59,7 +58,6 @@ public class Cypher {
             {'J', '9', 'U', 'T', 'I', '8'},
             {' ', '\n', '!', '"', '-', '.'}
     };
-
 
     /**
      * Encrypts the text using the specified keyword
@@ -82,9 +80,7 @@ public class Cypher {
                 }
             }
         }
-
-        columnarTransposition(encrypted,columns, rows, keyMatrix);
-
+        columnarTransposition(encrypted, columns, rows, keyMatrix);
         return encrypted.toString();
     }
 
@@ -95,7 +91,7 @@ public class Cypher {
      * @param rows
      * @param keyMatrix
      */
-    private void columnarTransposition(StringBuilder encrypted,int columns, int rows, char[][] keyMatrix) {
+    private void columnarTransposition(StringBuilder encrypted, int columns, int rows, char[][] keyMatrix) {
         int position;
         char[] keyToCharArray = keyword.toCharArray();
 
@@ -114,7 +110,6 @@ public class Cypher {
                 encrypted.append(keyMatrix[j][position]);
             }
         }
-
     }
 
     /**
@@ -151,17 +146,8 @@ public class Cypher {
 
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < column; j++) {
-                decrypted = decrypted.append(Matrix[i][j]);
+                decrypted.append(Matrix[i][j]);
             }
-        }
-        try {
-            FileWriter fw = new FileWriter("out222.txt");
-            fw.write(decrypted.toString());
-            fw.flush();
-            fw.close();
-        } catch (Exception e) {
-            System.out.println("Oops! something is wrong");
-            e.printStackTrace();
         }
         return generateValueFromMatrix(decrypted.toString());
 
@@ -179,7 +165,18 @@ public class Cypher {
         StringBuilder sb = new StringBuilder();
         for (String a : split) {
             if (a.trim().length() > 1) {
-                sb.append(polybiusSquare[getKey(polybiusMap, a.charAt(0))][getKey(polybiusMap, a.charAt(1))]);
+                try {
+                    sb.append(polybiusSquare[getKey(polybiusMap, a.charAt(0))][getKey(polybiusMap, a.charAt(1))]);
+                } catch (NoSuchElementException e) {
+                    sb= new StringBuilder();
+                    System.out.println("\n It is not following valid encryption format >>>\n");
+                    break;
+                }
+                catch (ArrayIndexOutOfBoundsException e){
+                    System.out.println("\n The message is too long please decrypt it from a file >>>\n");
+                    sb= new StringBuilder();
+                    break;
+                }
             }
         }
         return sb.toString();

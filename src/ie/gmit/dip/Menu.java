@@ -44,7 +44,6 @@ public class Menu {
         }
     }
 
-
     private void showOptions() {
         System.out.println("######################################");
         System.out.println("#   Polybius Square Cypher V 0.0.1   #");
@@ -58,21 +57,24 @@ public class Menu {
     }
 
     private void encryptFromFile() throws IOException {
-        System.out.println("Enter the keyword >>>");
-        cypher.setKeyword(bufferRead.readLine());
-        System.out.println("Enter path to file >>>");
-        String pathToFile = bufferRead.readLine();
-        cypher.setMessageToEncrypt(Utils.parse(pathToFile));
+        cypher.setMessageToEncrypt(Utils.parse(enterKeyAndPath()));
         String encrypt = cypher.encrypt();
         System.out.println("The encrypted message is >>>\n" + encrypt + "\n");
         writeToFile(encrypt);
     }
 
+    private String enterKeyAndPath() throws IOException {
+        System.out.println("Enter the keyword >>>");
+        cypher.setKeyword(Utils.checkIsNotEmpty(bufferRead.readLine(), bufferRead));
+        System.out.println("Enter path to file >>>");
+        return bufferRead.readLine();
+    }
+
     private void encryptFromConsole() throws IOException {
         System.out.println("Enter the keyword >>>");
-        cypher.setKeyword(bufferRead.readLine());
+        cypher.setKeyword(Utils.checkIsNotEmpty(bufferRead.readLine(), bufferRead));
         System.out.println("Type message to encrypt >>>");
-        cypher.setMessageToEncrypt(bufferRead.readLine());
+        cypher.setMessageToEncrypt(Utils.checkIsNotEmpty(bufferRead.readLine(), bufferRead));
         String encrypt = cypher.encrypt();
         System.out.println("The encrypted message is >>>\n" + encrypt + "\n");
         writeToFile(encrypt);
@@ -81,38 +83,33 @@ public class Menu {
     private void writeToFile(String text) throws IOException {
         System.out.println("Would you like to save it to a file? [y/n] >>>\n");
         if (bufferRead.readLine().equalsIgnoreCase("y")) {
-            String fileName = "cypher_" + Instant.now().toEpochMilli()+".txt";
-            System.out.println("Saved to "+fileName+" >>>\n");
+            String fileName = "cypher_" + Instant.now().toEpochMilli() + ".txt";
+            System.out.println("Saved to " + fileName + " >>>\n");
             Utils.writeToFile(fileName, text);
+        } else {
+            System.out.println("File not saved >>>\n");
         }
     }
 
     private void decryptFromConsole() throws IOException {
         System.out.println("Enter the keyword >>>");
-        String keyword = bufferRead.readLine();
-
-        while (keyword.length() < 1) {
-            System.out.println("Keyword cannot be empty, please enter a keyword >>>");
-            keyword = bufferRead.readLine();
-        }
-        cypher.setKeyword(keyword);
+        cypher.setKeyword(Utils.checkIsNotEmpty(bufferRead.readLine(), bufferRead));
         System.out.println("Enter the message to decryptFromConsole >>>");
-        cypher.setMessageToDecrypt(bufferRead.readLine());
-        String decrypt = cypher.decrypt();
-        System.out.println("The decrypted message is >>>\n" + decrypt + "\n");
-        writeToFile(decrypt);
+        cypher.setMessageToDecrypt(Utils.checkIsNotEmpty(bufferRead.readLine(), bufferRead));
+        String decrypted = cypher.decrypt();
+        if (decrypted.length() > 0) {
+            System.out.println("The decrypted message is >>>\n" + decrypted + "\n");
+            writeToFile(decrypted);
+        }
     }
 
     private void decryptFromFile() throws IOException {
-        System.out.println("Enter the keyword >>>");
-        cypher.setKeyword(bufferRead.readLine());
-        System.out.println("Enter path to file >>>");
-        String pathToFile = bufferRead.readLine();
-        cypher.setMessageToDecrypt(Utils.parse(pathToFile));
-        String decrypt = cypher.decrypt();
-        System.out.println("The decrypted message is >>>\n" + decrypt + "\n");
-        writeToFile(decrypt);
-
+        cypher.setMessageToDecrypt(Utils.parse(enterKeyAndPath()));
+        String decrypted = cypher.decrypt();
+        if (decrypted.length() > 0) {
+            System.out.println("The decrypted message is >>>\n" + decrypted + "\n");
+            writeToFile(decrypted);
+        }
     }
 
 }
