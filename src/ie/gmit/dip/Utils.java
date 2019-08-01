@@ -58,10 +58,15 @@ public class Utils {
         return sb.toString();
     }
 
-    public static void writeToFile(String fileName,String decryptedText) {
+    /**
+     * Writes the text to a file
+     * @param fileName name of the file to create
+     * @param text text to write to the file
+     */
+    public static void writeToFile(String fileName,String text) {
         try {
             FileWriter fw = new FileWriter(fileName);
-            fw.write(decryptedText);
+            fw.write(text);
             fw.flush();
             fw.close();
         } catch (Exception e) {

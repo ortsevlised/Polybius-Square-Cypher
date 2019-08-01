@@ -9,6 +9,7 @@ import static ie.gmit.dip.Utils.getKey;
 import static ie.gmit.dip.Utils.getRows;
 
 public class Cypher {
+
     private String messageToEncrypt;
     private String messageToDecrypt;
     private String keyword;
@@ -49,6 +50,9 @@ public class Cypher {
         polybiusMap.put(6, 'Z');
     }
 
+    /**
+     * Added extra row for special characters
+     */
     private char[][] polybiusSquare = {
             {'P', 'H', '0', 'Q', 'G', '6'},
             {'4', 'M', 'E', 'A', '1', 'Y'},
@@ -94,15 +98,14 @@ public class Cypher {
     private void columnarTransposition(StringBuilder encrypted, int columns, int rows, char[][] keyMatrix) {
         int position;
         char[] keyToCharArray = keyword.toCharArray();
-
         char[] sortedKey = new char[keyToCharArray.length];
+
         for (int i = 0; i < keyToCharArray.length; i++) {
             sortedKey[i] = keyToCharArray[i];
         }
 
         Arrays.sort(sortedKey);
         for (int i = 0; i < columns; i++) {
-
             position = keyword.indexOf(sortedKey[i]);
             keyToCharArray[position] = '\u0000';//setting the indexes already used to unicode null character, in case there's a duplicate value not to use the wrong one.
             keyword = new String(keyToCharArray);
@@ -131,9 +134,8 @@ public class Cypher {
         Arrays.sort(sortedKey);
 
         for (int i = 0; i < column; i++) {
-
             position = keyword.indexOf(sortedKey[i]);
-            keyToCharArray[position] = '!';
+            keyToCharArray[position] = '\u0000';//setting the indexes already used to unicode null character, in case there's a duplicate value not to use the wrong one.
             keyword = new String(keyToCharArray);
 
             for (int j = 0; j < rows; j++) {
@@ -150,7 +152,6 @@ public class Cypher {
             }
         }
         return generateValueFromMatrix(decrypted.toString());
-
     }
 
 
@@ -161,20 +162,19 @@ public class Cypher {
      */
     public String generateValueFromMatrix(String encrypted) {
         String[] split = encrypted.split("(?<=\\G..)");
-
         StringBuilder sb = new StringBuilder();
-        for (String a : split) {
-            if (a.trim().length() > 1) {
+
+        for (String pair : split) {
+            if (pair.trim().length() > 1) {
                 try {
-                    sb.append(polybiusSquare[getKey(polybiusMap, a.charAt(0))][getKey(polybiusMap, a.charAt(1))]);
+                    sb.append(polybiusSquare[getKey(polybiusMap, pair.charAt(0))][getKey(polybiusMap, pair.charAt(1))]);
                 } catch (NoSuchElementException e) {
-                    sb= new StringBuilder();
+                    sb = new StringBuilder();
                     System.out.println("\n It is not following valid encryption format >>>\n");
                     break;
-                }
-                catch (ArrayIndexOutOfBoundsException e){
+                } catch (ArrayIndexOutOfBoundsException e) {
                     System.out.println("\n The message is too long please decrypt it from a file >>>\n");
-                    sb= new StringBuilder();
+                    sb = new StringBuilder();
                     break;
                 }
             }
