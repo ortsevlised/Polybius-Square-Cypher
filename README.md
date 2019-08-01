@@ -2,7 +2,7 @@
 
 ## Steps to run the application:
 
-1- Go to Polybius square cypher and Compile the application
+1- Unpack the Polybius square cypher and Compile the application
 
 ``` javac -classpath * src/ie/gmit/dip/*.java```
 
