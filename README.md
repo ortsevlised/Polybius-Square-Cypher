@@ -17,6 +17,7 @@
 The application have 4 functions, Encrypt a message from the console or a file and Decrypt a message from the console or a file as well.
 If the message to encrypt is too long please save it to a file as it won't be displayed on the screen.
 
+Keywords can be one or more words.
 Feel free to use the documents in the resources package to try the encryption and decryption from a file, make sure you use an absolute path.
 
 
